@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+from catstalk.generator import Generator
 
 DESCRIPTION = """The command line interface of Catstalk."""
 USAGE = "catstalk <command> [options]"
 COMMANDS = {
-    "init": "generate a new project",
+    "init <path default=\"blog\">": "generate a new project",
 }
 COMMANDS_HELP = "\nCommands:\n"
 for command in COMMANDS.keys():
@@ -17,8 +18,15 @@ parser = argparse.ArgumentParser(
     epilog=COMMANDS_HELP,
     formatter_class=argparse.RawTextHelpFormatter)
 
-parser.add_argument("command", help="the command that you want")
+parser.add_argument("command", help="the command that you want", nargs="+")
 
 
 def parse():
     args = parser.parse_args()
+    if args.command[0] == "init":
+        if len(args.command) > 1:
+            path = args.command[1]
+        else:
+            path = "blog"
+        generator = Generator(path=path)
+        generator.generate()
