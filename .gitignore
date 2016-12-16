@@ -92,3 +92,5 @@ Temporary Items
 .idea
 # Virtualenv
 venv
+.python-version
+

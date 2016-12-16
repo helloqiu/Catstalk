@@ -14,7 +14,7 @@ setup(
     url="https://github.com/helloqiu/Catstalk",
     packages=find_packages(),
     entry_points={
-        "console_scripts": ["catstalk=catstalk.cli"],
+        "console_scripts": ["catstalk=catstalk.cli:parser"],
     },
     include_package_data=True,
     install_requires=open("requirements.txt").readlines(),
