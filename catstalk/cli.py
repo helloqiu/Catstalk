@@ -4,11 +4,21 @@ import argparse
 
 DESCRIPTION = """The command line interface of Catstalk."""
 USAGE = "catstalk <command> [options]"
-COMMANDS = ["init"]
+COMMANDS = {
+    "init": "generate a new project",
+}
+COMMANDS_HELP = "\nCommands:\n"
+for command in COMMANDS.keys():
+    COMMANDS_HELP += "  %s    %s\n" % (command, COMMANDS[command])
 
-parser = argparse.ArgumentParser(description=DESCRIPTION, usage=USAGE)
+parser = argparse.ArgumentParser(
+    description=DESCRIPTION,
+    usage=USAGE,
+    epilog=COMMANDS_HELP,
+    formatter_class=argparse.RawTextHelpFormatter)
 
-command = parser.add_argument_group("Commands")
-command.add_argument("init", help="generate a new project")
+parser.add_argument("command", help="the command that you want")
 
-args = parser.parse_args()
+
+def parse():
+    args = parser.parse_args()
