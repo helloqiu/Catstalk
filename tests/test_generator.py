@@ -5,7 +5,7 @@ import shutil
 from catstalk.generator import Generator
 
 
-def test_geenrator():
+def test_generator():
     path = "blog"
     try:
         generator = Generator(path=path)
