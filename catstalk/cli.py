@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-from catstalk.generator import Generator
+from catstalk.cat import Cat
 
 DESCRIPTION = """The command line interface of Catstalk."""
 USAGE = "catstalk <command> [options]"
@@ -28,5 +28,4 @@ def parse():
             path = args.command[1]
         else:
             path = "blog"
-        generator = Generator(path=path)
-        generator.generate()
+        Cat.generate(path)
