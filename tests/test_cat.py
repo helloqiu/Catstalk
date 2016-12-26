@@ -17,6 +17,7 @@ class CatTestCase(unittest.TestCase):
             Cat.generate(path)
             self.assertTrue(os.path.exists(path))
             self.assertTrue(os.path.exists(os.path.join(path, "content")))
+            self.assertTrue(os.path.exists(os.path.join(path, "uploads")))
             self.assertTrue(os.path.exists(os.path.join(os.path.join(path, "content"), "HelloWorld.md")))
         finally:
             shutil.rmtree(path)

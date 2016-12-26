@@ -18,6 +18,7 @@ class Cat(object):
         content_path = os.path.join(path, "content")
         os.mkdir(path)
         os.mkdir(content_path)
+        os.mkdir(os.path.join(path, "uploads"))
         date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(
                 os.path.join(content_path, "HelloWorld.md"),
