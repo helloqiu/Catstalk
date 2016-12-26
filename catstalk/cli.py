@@ -7,6 +7,7 @@ DESCRIPTION = """The command line interface of Catstalk."""
 USAGE = "catstalk <command> [options]"
 COMMANDS = {
     "init <path default=\"blog\">": "generate a new project",
+    "build <path default=\"content\"": "build content into a sqlite database"
 }
 COMMANDS_HELP = "\nCommands:\n"
 for command in COMMANDS.keys():
@@ -29,3 +30,9 @@ def parse():
         else:
             path = "blog"
         Cat.generate(path)
+    elif args.command[0] == "build":
+        if len(args.command) > 1:
+            path = args.command[1]
+        else:
+            path = "content"
+        Cat.compile(path)
