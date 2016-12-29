@@ -3,3 +3,5 @@
 [![codecov](https://codecov.io/gh/helloqiu/Catstalk/branch/master/graph/badge.svg)](https://codecov.io/gh/helloqiu/Catstalk)
 
 Just an another static blog generator written in python.
+## License
+MIT
