@@ -5,12 +5,23 @@ import shutil
 import unittest
 import datetime
 from peewee import IntegrityError
+from playhouse.test_utils import test_database
+from playhouse.sqlite_ext import SqliteExtDatabase
+
 from catstalk.cat import Cat
 from catstalk.static import POST_TEMPLATE
-from catstalk.models import *
+from catstalk.models import Tag, Post
+
+test_db = SqliteExtDatabase(":memory:")
 
 
 class CatTestCase(unittest.TestCase):
+    def tearDown(self):
+        try:
+            os.remove("blog_data.sqlite3")
+        except OSError:
+            pass
+
     def test_generate(self):
         path = "blog"
         try:
@@ -23,7 +34,7 @@ class CatTestCase(unittest.TestCase):
             shutil.rmtree(path)
 
     def test_compile_post(self):
-        try:
+        with test_database(test_db, (Tag, Post)):
             # Without tag
             date = datetime.datetime.now()
             str_date = date.strftime("%Y-%m-%d %H:%M:%S")
@@ -49,5 +60,3 @@ class CatTestCase(unittest.TestCase):
             self.assertEqual(post.content, "<p>Hello World!</p>\n")
             # Unique
             self.assertRaises(IntegrityError, Cat.compile_post, content)
-        finally:
-            os.remove("blog_data.sqlite3")
