@@ -62,7 +62,7 @@ class ServerTestCase(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             response = response.json_body
             self.assertEqual(response["max_page"], 1)
-            self.assertEqual(response["posts"][0]["tag"], "test")
+            self.assertEqual(response["posts"][0]["tag"]["name"], "test")
             self.assertEqual(response["posts"][0]["date"], str_date)
             self.assertEqual(response["posts"][0]["title"], "Test")
             self.assertEqual(response["posts"][0]["content"], "<p>Hello World!</p>\n")
@@ -91,7 +91,7 @@ class ServerTestCase(unittest.TestCase):
             self.assertEqual(response["max_page"], 2)
             for i in range(0, len(response["posts"])):
                 post = response["posts"][i]
-                self.assertTrue("test" in post["tag"])
+                self.assertTrue("test" in post["tag"]["name"])
                 self.assertEqual(post["date"], str_date)
                 self.assertTrue("Test" in post["title"])
                 self.assertEqual(post["content"], "<p>Hello World!</p>\n")
@@ -101,7 +101,7 @@ class ServerTestCase(unittest.TestCase):
             self.assertEqual(response["max_page"], 2)
             for i in range(0, len(response["posts"])):
                 post = response["posts"][i]
-                self.assertTrue("test" in post["tag"])
+                self.assertTrue("test" in post["tag"]["name"])
                 self.assertEqual(post["date"], str_date)
                 self.assertTrue("Test" in post["title"])
                 self.assertEqual(post["content"], "<p>Hello World!</p>\n")
@@ -126,6 +126,6 @@ class ServerTestCase(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 response = response.json_body
                 self.assertEqual(response["title"], "Test%d" % i)
-                self.assertEqual(response["tag"], "test%d" % i)
+                self.assertEqual(response["tag"]["name"], "test%d" % i)
                 self.assertEqual(response["date"], str_date)
                 self.assertEqual(response["content"], "<p>Hello World!</p>\n")

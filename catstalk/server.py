@@ -2,15 +2,15 @@
 
 import json
 import tornado.web
+from playhouse.shortcuts import model_to_dict
 from catstalk.models import Tag, Post
-from catstalk.utils import serialize_post
 
 
 class AllTagHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         tags = []
         for tag in Tag.select().order_by(Tag.name):
-            tags.append({"name": tag.name})
+            tags.append(model_to_dict(tag))
         self.set_header('Content-Type', 'application/json; charset=UTF-8')
         self.write(json.dumps(tags))
 
@@ -25,7 +25,15 @@ class TagDetailHandler(tornado.web.RequestHandler):
         if not posts.exists():
             raise tornado.web.HTTPError(404)
         num = Post.select().join(Tag).where(Tag.name == name).count()
-        result = serialize_post(posts, num)
+        posts_result = []
+        for post in posts:
+            temp = model_to_dict(post)
+            temp["date"] = temp["date"].strftime("%Y-%m-%d %H:%M:%S")
+            posts_result.append(temp)
+        result = dict(
+            max_page=int((num - 1) / 10) + 1,
+            posts=posts_result,
+        )
         self.set_header('Content-Type', 'application/json; charset=UTF-8')
         self.write(json.dumps(result))
 
@@ -38,7 +46,15 @@ class PostHandler(tornado.web.RequestHandler):
             page = 1
         posts = Post.select().order_by(Post.date).paginate(page, 10)
         num = Post.select().count()
-        result = serialize_post(posts, num)
+        posts_result = []
+        for post in posts:
+            temp = model_to_dict(post)
+            temp["date"] = temp["date"].strftime("%Y-%m-%d %H:%M:%S")
+            posts_result.append(temp)
+        result = dict(
+            max_page=int((num - 1) / 10) + 1,
+            posts=posts_result,
+        )
         self.set_header('Content-Type', 'application/json; charset=UTF-8')
         self.write(json.dumps(result))
 
@@ -49,17 +65,10 @@ class PostDetailHandler(tornado.web.RequestHandler):
         if not post.exists():
             raise tornado.web.HTTPError(404)
         post = post.get()
-        result = dict()
-        try:
-            tag = post.tag.name
-        except:
-            tag = None
-        result["tag"] = tag
-        result["title"] = post.title
-        result["date"] = post.date.strftime("%Y-%m-%d %H:%M:%S")
-        result["content"] = post.content
+        post = model_to_dict(post)
+        post["date"] = post["date"].strftime("%Y-%m-%d %H:%M:%S")
         self.set_header('Content-Type', 'application/json; charset=UTF-8')
-        self.write(json.dumps(result))
+        self.write(json.dumps(post))
 
 
 def get_app():
