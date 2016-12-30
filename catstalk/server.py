@@ -3,7 +3,7 @@
 import json
 import tornado.web
 from playhouse.shortcuts import model_to_dict
-from catstalk.models import Tag, Post
+from catstalk.models import Tag, Post, Info
 
 
 class AllTagHandler(tornado.web.RequestHandler):
@@ -71,6 +71,15 @@ class PostDetailHandler(tornado.web.RequestHandler):
         self.write(json.dumps(post))
 
 
+class InfoHandler(tornado.web.RequestHandler):
+    def get(self, *args, **kwargs):
+        info = Info.select().get()
+        info = model_to_dict(info)
+        info.pop("id")
+        self.set_header('Content-Type', 'application/json; charset=UTF-8')
+        self.write(json.dumps(info))
+
+
 def get_app():
     return tornado.web.Application([
         (r"/api/tags(/)?$", AllTagHandler),
@@ -79,4 +88,5 @@ def get_app():
         (r"/api/posts(/)?$", PostHandler),
         (r"/api/posts/page/(\d+)", PostHandler),
         (r"/api/posts/title/([^/]+)", PostDetailHandler),
+        (r"/api/info", InfoHandler),
     ])

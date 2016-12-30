@@ -7,11 +7,12 @@ import webtest
 from tornado.wsgi import WSGIAdapter
 from playhouse.sqlite_ext import SqliteExtDatabase
 from playhouse.test_utils import test_database
+from playhouse.shortcuts import model_to_dict
 
 from catstalk.cat import Cat
-from catstalk.static import POST_TEMPLATE
+from catstalk.static import POST_TEMPLATE, CONF_TEMPLATE
 from catstalk.server import get_app
-from catstalk.models import Tag, Post
+from catstalk.models import Tag, Post, Info
 
 test_db = SqliteExtDatabase(":memory:")
 
@@ -129,3 +130,15 @@ class ServerTestCase(unittest.TestCase):
                 self.assertEqual(response["tag"]["name"], "test%d" % i)
                 self.assertEqual(response["date"], str_date)
                 self.assertEqual(response["content"], "<p>Hello World!</p>\n")
+
+    def test_info(self):
+        with test_database(test_db, (Info,)):
+            Cat.compile_info(CONF_TEMPLATE)
+            info = model_to_dict(Info.select().get())
+            app = webtest.TestApp(WSGIAdapter(get_app()))
+
+            response = app.get("/api/info")
+            self.assertEqual(response.status_code, 200)
+            response = response.json_body
+            for i in response.keys():
+                self.assertEqual(response[i], info[i])
