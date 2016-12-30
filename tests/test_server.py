@@ -23,22 +23,26 @@ class ServerTestCase(unittest.TestCase):
         except OSError:
             pass
 
-    def test_tornado_server(self):
+    def add_posts(self):
+        date = datetime.datetime.now()
+        str_date = date.strftime("%Y-%m-%d %H:%M:%S")
+        content = u"%s%s" % (
+            POST_TEMPLATE.replace("{{date}}", str_date).replace("{{title}}", "Test"), "Hello World!"
+        )
+        temp = content.split("---")
+        content = "---\n%s\ntag: test\n---%s" % (temp[1], temp[2])
+        Cat.compile_post(content)
+        return str_date
+
+    def add_tags(self):
+        for i in range(0, 10):
+            Tag.create(name="tag%d" % i)
+
+    def test_tag_detail(self):
         with test_database(test_db, (Tag, Post)):
             # Add some post
-            date = datetime.datetime.now()
-            str_date = date.strftime("%Y-%m-%d %H:%M:%S")
-            content = u"%s%s" % (
-                POST_TEMPLATE.replace("{{date}}", str_date).replace("{{title}}", "Test"), "Hello World!"
-            )
-            temp = content.split("---")
-            content = "---\n%s\ntag: test\n---%s" % (temp[1], temp[2])
-            Cat.compile_post(content)
-
+            str_date = self.add_posts()
             app = webtest.TestApp(WSGIAdapter(get_app()))
-            # All Tag
-            response = app.get("/api/tags")
-            self.assertEqual(response.json_body[0]["name"], "test")
             # Tag Detail
             response = app.get("/api/tags/none", expect_errors=True)
             self.assertEqual(response.status_code, 404)
@@ -50,3 +54,15 @@ class ServerTestCase(unittest.TestCase):
             self.assertEqual(response["posts"][0]["date"], str_date)
             self.assertEqual(response["posts"][0]["title"], "Test")
             self.assertEqual(response["posts"][0]["content"], "<p>Hello World!</p>\n")
+
+    def test_all_tag(self):
+        with test_database(test_db, (Tag, Post)):
+            # Add some tags
+            self.add_tags()
+            app = webtest.TestApp(WSGIAdapter(get_app()))
+            # All Tag
+            response = app.get("/api/tags")
+            self.assertEqual(response.status_code, 200)
+            response = response.json_body
+            for i in range(0, len(response)):
+                self.assertEqual(response[i]["name"], "tag%d" % i)
