@@ -16,7 +16,11 @@ class AllTagHandler(tornado.web.RequestHandler):
 
 
 class TagDetailHandler(tornado.web.RequestHandler):
-    def get(self, name=None, page=1):
+    def get(self, name, page=1):
+        try:
+            page = int(page)
+        except TypeError:
+            page = 1
         posts = Post.select().join(Tag).order_by(Post.date).paginate(page, 10).where(Tag.name == name)
         if not posts.exists():
             raise tornado.web.HTTPError(404)
@@ -30,6 +34,10 @@ class TagDetailHandler(tornado.web.RequestHandler):
 
 class PostHandler(tornado.web.RequestHandler):
     def get(self, page=1):
+        try:
+            page = int(page)
+        except TypeError:
+            page = 1
         posts = Post.select().order_by(Post.date).paginate(page, 10)
         num = Post.select().count()
         result = serialize_post(posts, num)
@@ -37,10 +45,31 @@ class PostHandler(tornado.web.RequestHandler):
         self.write(json.dumps(result))
 
 
+class PostDetailHandler(tornado.web.RequestHandler):
+    def get(self, title):
+        post = Post.select().where(Post.title == title)
+        if not post.exists():
+            raise tornado.web.HTTPError(404)
+        post = post.get()
+        result = dict()
+        try:
+            tag = post.tag.name
+        except:
+            tag = None
+        result["tag"] = tag
+        result["title"] = post.title
+        result["date"] = post.date.strftime("%Y-%m-%d %H:%M:%S")
+        result["content"] = post.content
+        self.set_header('Content-Type', 'application/json; charset=UTF-8')
+        self.write(json.dumps(result))
+
+
 def get_app():
     return tornado.web.Application([
         (r"/api/tags(/)?$", AllTagHandler),
+        (r"/api/tags/([^/]+)", TagDetailHandler),
         (r"/api/tags/([^/]+)/page/(\d+)", TagDetailHandler),
-        (r"/api/tags/([^/]+)", TagDetailHandler)
-
+        (r"/api/posts(/)?$", PostHandler),
+        (r"/api/posts/page/(\d+)", PostHandler),
+        (r"/api/posts/title/([^/]+)", PostDetailHandler),
     ])

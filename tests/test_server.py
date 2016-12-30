@@ -23,7 +23,7 @@ class ServerTestCase(unittest.TestCase):
         except OSError:
             pass
 
-    def add_posts(self):
+    def add_post(self):
         date = datetime.datetime.now()
         str_date = date.strftime("%Y-%m-%d %H:%M:%S")
         content = u"%s%s" % (
@@ -34,14 +34,26 @@ class ServerTestCase(unittest.TestCase):
         Cat.compile_post(content)
         return str_date
 
+    def add_posts(self):
+        date = datetime.datetime.now()
+        str_date = date.strftime("%Y-%m-%d %H:%M:%S")
+        for i in range(0, 20):
+            content = u"%s%s" % (
+                POST_TEMPLATE.replace("{{date}}", str_date).replace("{{title}}", "Test%d" % i), "Hello World!"
+            )
+            temp = content.split("---")
+            content = "---\n%s\ntag: test%d\n---%s" % (temp[1], i, temp[2])
+            Cat.compile_post(content)
+        return str_date
+
     def add_tags(self):
         for i in range(0, 10):
             Tag.create(name="tag%d" % i)
 
     def test_tag_detail(self):
         with test_database(test_db, (Tag, Post)):
-            # Add some post
-            str_date = self.add_posts()
+            # Add post
+            str_date = self.add_post()
             app = webtest.TestApp(WSGIAdapter(get_app()))
             # Tag Detail
             response = app.get("/api/tags/none", expect_errors=True)
@@ -66,3 +78,54 @@ class ServerTestCase(unittest.TestCase):
             response = response.json_body
             for i in range(0, len(response)):
                 self.assertEqual(response[i]["name"], "tag%d" % i)
+
+    def test_posts(self):
+        with test_database(test_db, (Tag, Post)):
+            # Add some posts
+            str_date = self.add_posts()
+            app = webtest.TestApp(WSGIAdapter(get_app()))
+            # Post
+            response = app.get("/api/posts")
+            self.assertEqual(response.status_code, 200)
+            response = response.json_body
+            self.assertEqual(response["max_page"], 2)
+            for i in range(0, len(response["posts"])):
+                post = response["posts"][i]
+                self.assertTrue("test" in post["tag"])
+                self.assertEqual(post["date"], str_date)
+                self.assertTrue("Test" in post["title"])
+                self.assertEqual(post["content"], "<p>Hello World!</p>\n")
+            response = app.get("/api/posts/page/2")
+            self.assertEqual(response.status_code, 200)
+            response = response.json_body
+            self.assertEqual(response["max_page"], 2)
+            for i in range(0, len(response["posts"])):
+                post = response["posts"][i]
+                self.assertTrue("test" in post["tag"])
+                self.assertEqual(post["date"], str_date)
+                self.assertTrue("Test" in post["title"])
+                self.assertEqual(post["content"], "<p>Hello World!</p>\n")
+            # And test all tags
+            response = app.get("/api/tags")
+            self.assertEqual(response.status_code, 200)
+            response = response.json_body
+            for i in range(0, len(response)):
+                self.assertTrue("test" in response[i]["name"])
+
+    def test_detail_post(self):
+        with test_database(test_db, (Tag, Post)):
+            # Add some posts
+            str_date = self.add_posts()
+            app = webtest.TestApp(WSGIAdapter(get_app()))
+
+            response = app.get("/api/posts/title/miao", expect_errors=True)
+            self.assertEqual(response.status_code, 404)
+
+            for i in range(0, 20):
+                response = app.get("/api/posts/title/Test%d" % i)
+                self.assertEqual(response.status_code, 200)
+                response = response.json_body
+                self.assertEqual(response["title"], "Test%d" % i)
+                self.assertEqual(response["tag"], "test%d" % i)
+                self.assertEqual(response["date"], str_date)
+                self.assertEqual(response["content"], "<p>Hello World!</p>\n")
