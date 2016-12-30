@@ -21,6 +21,3 @@ class Post(BaseModel):
     title = CharField(unique=True)
     date = DateTimeField()
     content = TextField()
-
-
-db.create_tables([Tag, Post])

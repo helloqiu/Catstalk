@@ -5,8 +5,9 @@ import datetime
 import sys
 import logging
 import markdown2
+import peewee
 from catstalk.static import POST_TEMPLATE
-from catstalk.models import Tag, Post
+from catstalk.models import Tag, Post, db
 
 if sys.version_info[0] < 3:
     from io import open
@@ -54,6 +55,10 @@ class Cat(object):
         except AssertionError:
             logging.error("Can not find content folder \"%s\"." % content_path)
             return
+        try:
+            db.create_tables([Tag, Post])
+        except peewee.OperationalError:
+            pass
         for file in os.listdir(content_path):
             if file.endswith("md"):
                 with open(os.path.join(content_path, file), mode="r", encoding="utf-8") as f:

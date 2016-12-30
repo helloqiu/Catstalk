@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import tornado.ioloop
 from catstalk.cat import Cat
+from catstalk.server import get_app
 
 DESCRIPTION = """The command line interface of Catstalk."""
 USAGE = "catstalk <command> [options]"
 COMMANDS = {
     "init <path default=\"blog\">": "generate a new project",
-    "build <path default=\"content\"": "build content into a sqlite database"
+    "build <path default=\"content\">": "build content into a sqlite database",
+    "serve <port default=\"8080\">": "serve back-end api",
 }
 COMMANDS_HELP = "\nCommands:\n"
 for command in COMMANDS.keys():
@@ -36,3 +39,11 @@ def parse():
         else:
             path = "content"
         Cat.compile(path)
+    elif args.command[0] == "serve":
+        if len(args.command) > 1:
+            port = args.command[1]
+        else:
+            port = 8080
+        application = get_app()
+        application.listen(port)
+        tornado.ioloop.IOLoop.current().start()

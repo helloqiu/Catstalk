@@ -30,8 +30,6 @@ class TagDetailHandler(tornado.web.RequestHandler):
         self.write(json.dumps(result))
 
 
-# TODO: Add AllPostHandler and PostDetailHandler
-
 class PostHandler(tornado.web.RequestHandler):
     def get(self, page=1):
         try:
