@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import os
 import tornado.ioloop
-from catstalk.cat import Cat
-from catstalk.server import get_app
+import tornado.web
 
 DESCRIPTION = """The command line interface of Catstalk."""
 USAGE = "catstalk <command> [options]"
@@ -32,18 +32,26 @@ def parse():
             path = args.command[1]
         else:
             path = "blog"
+        from catstalk.cat import Cat
         Cat.generate(path)
     elif args.command[0] == "build":
         if len(args.command) > 1:
             path = args.command[1]
         else:
             path = "content"
+        try:
+            os.remove("blog_data.sqlite3")
+        except OSError:
+            pass
+        from catstalk.cat import Cat
         Cat.compile(path)
     elif args.command[0] == "serve":
         if len(args.command) > 1:
             port = args.command[1]
         else:
             port = 8080
+        from catstalk.server import get_app
         application = get_app()
+        application.add_handlers(r"/uploads/(*)", tornado.web.StaticFileHandler, {"path": "uploads"})
         application.listen(port)
         tornado.ioloop.IOLoop.current().start()

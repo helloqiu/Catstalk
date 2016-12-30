@@ -3,10 +3,11 @@
 import os
 import datetime
 import sys
+import shutil
 import logging
 import markdown2
 import peewee
-from catstalk.static import POST_TEMPLATE
+from catstalk.static import POST_TEMPLATE, CONF_TEMPLATE
 from catstalk.models import Tag, Post, db
 
 if sys.version_info[0] < 3:
@@ -31,6 +32,17 @@ class Cat(object):
                     POST_TEMPLATE.replace("{{date}}", date).replace("{{title}}", "HelloWorld"), "Hello World!"
                 )
             )
+        with open(
+                os.path.join(path, "config.json"),
+                mode="w",
+                encoding="utf-8"
+        ) as f:
+            f.write(CONF_TEMPLATE)
+        avatar_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "resource/avatar.png"
+        )
+        shutil.copy(avatar_path, os.path.join(path, "uploads/"))
 
     @staticmethod
     def compile_post(content):

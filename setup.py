@@ -13,6 +13,7 @@ setup(
     author_email="helloqiu95@gmail.com",
     url="https://github.com/helloqiu/Catstalk",
     packages=find_packages(),
+    packages_data={"catstalk": ["resource/*"]},
     entry_points={
         "console_scripts": ["catstalk=catstalk.cli:parse"],
     },
