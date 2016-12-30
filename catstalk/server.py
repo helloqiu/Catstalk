@@ -3,6 +3,7 @@
 import json
 import tornado.web
 from catstalk.models import Tag, Post
+from catstalk.utils import serialize_post
 
 
 class AllTagHandler(tornado.web.RequestHandler):
@@ -16,32 +17,24 @@ class AllTagHandler(tornado.web.RequestHandler):
 
 class TagDetailHandler(tornado.web.RequestHandler):
     def get(self, name=None, page=1):
-        if not name:
+        posts = Post.select().join(Tag).order_by(Post.date).paginate(page, 10).where(Tag.name == name)
+        if not posts.exists():
             raise tornado.web.HTTPError(404)
-        else:
-            try:
-                page = int(page)
-            except TypeError:
-                raise tornado.web.HTTPError(404)
-            posts = Post.select().join(Tag).order_by(Post.date).paginate(page, 10).where(Tag.name == name)
-            if not posts.exists():
-                raise tornado.web.HTTPError(404)
-            num = Post.select().join(Tag).where(Tag.name == name).count()
-            result = dict()
-            result["max_page"] = int(num / 10) + 1
-            result["posts"] = []
-            for post in posts:
-                result["posts"].append({
-                    "tag": post.tag.name,
-                    "date": post.date.strftime("%Y-%m-%d %H:%M:%S"),
-                    "title": post.title,
-                    "content": post.content
-                })
-            self.set_header('Content-Type', 'application/json; charset=UTF-8')
-            self.write(json.dumps(result))
+        num = Post.select().join(Tag).where(Tag.name == name).count()
+        result = serialize_post(posts, num)
+        self.set_header('Content-Type', 'application/json; charset=UTF-8')
+        self.write(json.dumps(result))
 
 
 # TODO: Add AllPostHandler and PostDetailHandler
+
+class PostHandler(tornado.web.RequestHandler):
+    def get(self, page=1):
+        posts = Post.select().order_by(Post.date).paginate(page, 10)
+        num = Post.select().count()
+        result = serialize_post(posts, num)
+        self.set_header('Content-Type', 'application/json; charset=UTF-8')
+        self.write(json.dumps(result))
 
 
 def get_app():
