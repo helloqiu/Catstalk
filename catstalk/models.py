@@ -21,3 +21,10 @@ class Post(BaseModel):
     title = CharField(unique=True)
     date = DateTimeField()
     content = TextField()
+
+
+class Info(BaseModel):
+    title = CharField()
+    description = CharField()
+    author_name = CharField()
+    author_avatar = CharField()

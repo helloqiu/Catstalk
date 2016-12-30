@@ -7,8 +7,9 @@ import shutil
 import logging
 import markdown2
 import peewee
+import json
 from catstalk.static import POST_TEMPLATE, CONF_TEMPLATE
-from catstalk.models import Tag, Post, db
+from catstalk.models import Tag, Post, Info, db
 
 if sys.version_info[0] < 3:
     from io import open
@@ -68,10 +69,15 @@ class Cat(object):
             logging.error("Can not find content folder \"%s\"." % content_path)
             return
         try:
-            db.create_tables([Tag, Post])
+            db.create_tables([Tag, Post, Info])
         except peewee.OperationalError:
             pass
         for file in os.listdir(content_path):
             if file.endswith("md"):
                 with open(os.path.join(content_path, file), mode="r", encoding="utf-8") as f:
                     Cat.compile_post(f.read())
+
+    @staticmethod
+    def compile_info(info):
+        info = json.loads(info)
+        Info.create(**info)

@@ -2,8 +2,12 @@
 
 import argparse
 import os
+import sys
 import tornado.ioloop
 import tornado.web
+
+if sys.version_info[0] < 3:
+    from io import open
 
 DESCRIPTION = """The command line interface of Catstalk."""
 USAGE = "catstalk <command> [options]"
@@ -45,6 +49,8 @@ def parse():
             pass
         from catstalk.cat import Cat
         Cat.compile(path)
+        with open("config.json", mode="r", encoding="utf-8") as f:
+            Cat.compile_info(f.read())
     elif args.command[0] == "serve":
         if len(args.command) > 1:
             port = args.command[1]

@@ -4,13 +4,14 @@ import os
 import shutil
 import unittest
 import datetime
+import json
 from peewee import IntegrityError
 from playhouse.test_utils import test_database
 from playhouse.sqlite_ext import SqliteExtDatabase
 
 from catstalk.cat import Cat
-from catstalk.static import POST_TEMPLATE
-from catstalk.models import Tag, Post
+from catstalk.static import POST_TEMPLATE, CONF_TEMPLATE
+from catstalk.models import Tag, Post, Info
 
 test_db = SqliteExtDatabase(":memory:")
 
@@ -60,3 +61,13 @@ class CatTestCase(unittest.TestCase):
             self.assertEqual(post.content, "<p>Hello World!</p>\n")
             # Unique
             self.assertRaises(IntegrityError, Cat.compile_post, content)
+
+    def test_compile_info(self):
+        with test_database(test_db, (Info,)):
+            Cat.compile_info(CONF_TEMPLATE)
+            conf = json.loads(CONF_TEMPLATE)
+            info = Info.select().get()
+            self.assertEqual(info.title, conf["title"])
+            self.assertEqual(info.description, conf["description"])
+            self.assertEqual(info.author_name, conf["author_name"])
+            self.assertEqual(info.author_avatar, conf["author_avatar"])
