@@ -81,6 +81,10 @@ class InfoHandler(tornado.web.RequestHandler):
 
 
 def get_app():
+    settings = {
+        "static_path": "uploads",
+        "static_url_prefix": "/uploads/"
+    }
     return tornado.web.Application([
         (r"/api/tags(/)?$", AllTagHandler),
         (r"/api/tags/([^/]+)", TagDetailHandler),
@@ -89,4 +93,4 @@ def get_app():
         (r"/api/posts/page/(\d+)", PostHandler),
         (r"/api/posts/title/([^/]+)", PostDetailHandler),
         (r"/api/info", InfoHandler),
-    ])
+    ], **settings)

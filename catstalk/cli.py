@@ -58,6 +58,5 @@ def parse():
             port = 8080
         from catstalk.server import get_app
         application = get_app()
-        application.add_handlers(r"/uploads/(*)", tornado.web.StaticFileHandler, {"path": "uploads"})
         application.listen(port)
         tornado.ioloop.IOLoop.current().start()
