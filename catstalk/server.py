@@ -6,7 +6,12 @@ from playhouse.shortcuts import model_to_dict
 from catstalk.models import Tag, Post, Info
 
 
-class AllTagHandler(tornado.web.RequestHandler):
+class BaseHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+
+
+class AllTagHandler(BaseHandler):
     def get(self, *args, **kwargs):
         tags = []
         for tag in Tag.select().order_by(Tag.name):
@@ -15,7 +20,7 @@ class AllTagHandler(tornado.web.RequestHandler):
         self.write(json.dumps(tags))
 
 
-class TagDetailHandler(tornado.web.RequestHandler):
+class TagDetailHandler(BaseHandler):
     def get(self, name, page=1):
         try:
             page = int(page)
@@ -38,7 +43,7 @@ class TagDetailHandler(tornado.web.RequestHandler):
         self.write(json.dumps(result))
 
 
-class PostHandler(tornado.web.RequestHandler):
+class PostHandler(BaseHandler):
     def get(self, page=1):
         try:
             page = int(page)
@@ -59,7 +64,7 @@ class PostHandler(tornado.web.RequestHandler):
         self.write(json.dumps(result))
 
 
-class PostDetailHandler(tornado.web.RequestHandler):
+class PostDetailHandler(BaseHandler):
     def get(self, title):
         post = Post.select().where(Post.title == title)
         if not post.exists():
@@ -71,7 +76,7 @@ class PostDetailHandler(tornado.web.RequestHandler):
         self.write(json.dumps(post))
 
 
-class InfoHandler(tornado.web.RequestHandler):
+class InfoHandler(BaseHandler):
     def get(self, *args, **kwargs):
         info = Info.select().get()
         info = model_to_dict(info)
@@ -83,7 +88,7 @@ class InfoHandler(tornado.web.RequestHandler):
 def get_app():
     settings = {
         "static_path": "uploads",
-        "static_url_prefix": "/uploads/"
+        "static_url_prefix": "/api/uploads/"
     }
     return tornado.web.Application([
         (r"/api/tags(/)?$", AllTagHandler),
