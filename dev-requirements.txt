@@ -3,3 +3,4 @@ pytest
 tox
 coverage
 webtest
+tornado
