@@ -4,12 +4,12 @@ import os
 import datetime
 import sys
 import shutil
-import logging
 import markdown2
 import peewee
 import json
 from catstalk.static import POST_TEMPLATE, CONF_TEMPLATE
 from catstalk.models import Tag, Post, Info, db
+from catstalk.logger import logger
 
 if sys.version_info[0] < 3:
     from io import open
@@ -18,6 +18,11 @@ if sys.version_info[0] < 3:
 class Cat(object):
     @staticmethod
     def generate(path):
+        """
+        Method to generate a new source folder.
+        :param path: The path of the new folder.
+        """
+        logger.info("Creating new catstalk folder in \"{}\".".format(path))
         content_path = os.path.join(path, "content")
         os.mkdir(path)
         os.mkdir(content_path)
@@ -44,9 +49,14 @@ class Cat(object):
             "resource/avatar.png"
         )
         shutil.copy(avatar_path, os.path.join(path, "uploads/"))
+        logger.info("Done.")
 
     @staticmethod
     def compile_post(content):
+        """
+        Compile a post into a model.
+        :param content: The content of the post.
+        """
         post = markdown2.markdown(content, extras=["metadata"])
         # Get tag
         if u"tag" in post.metadata:
@@ -66,7 +76,7 @@ class Cat(object):
         try:
             assert os.path.exists(content_path)
         except AssertionError:
-            logging.error("Can not find content folder \"%s\"." % content_path)
+            logger.error("Can not find content folder \"%s\"." % content_path)
             return
         try:
             db.create_tables([Tag, Post, Info])
