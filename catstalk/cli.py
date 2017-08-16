@@ -3,7 +3,6 @@
 import argparse
 import os
 import sys
-import logging
 
 if sys.version_info[0] < 3:
     from io import open
@@ -51,17 +50,4 @@ def parse():
         with open("config.json", mode="r", encoding="utf-8") as f:
             Cat.compile_info(f.read())
     elif args.command[0] == "serve":
-        try:
-            import tornado.ioloop
-            import tornado.web
-        except ImportError:
-            logging.error("You should install tornado first.")
-            return
-        if len(args.command) > 1:
-            port = args.command[1]
-        else:
-            port = 8080
-        from catstalk.server import get_app
-        application = get_app()
-        application.listen(port)
-        tornado.ioloop.IOLoop.current().start()
+        pass

@@ -28,3 +28,4 @@ class Info(BaseModel):
     description = CharField()
     author_name = CharField()
     author_avatar = CharField()
+    theme = CharField()

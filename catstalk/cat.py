@@ -7,9 +7,12 @@ import shutil
 import markdown2
 import peewee
 import json
+import subprocess
 from catstalk.static import POST_TEMPLATE, CONF_TEMPLATE
 from catstalk.models import Tag, Post, Info, db
 from catstalk.logger import logger
+
+DEFAULT_THEME = "https://github.com/helloqiu/catstalk-theme-simple"
 
 if sys.version_info[0] < 3:
     from io import open
@@ -27,6 +30,7 @@ class Cat(object):
         os.mkdir(path)
         os.mkdir(content_path)
         os.mkdir(os.path.join(path, "uploads"))
+        os.mkdir(os.path.join(path, "theme"))
         date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(
                 os.path.join(content_path, "HelloWorld.md"),
@@ -49,6 +53,10 @@ class Cat(object):
             "resource/avatar.png"
         )
         shutil.copy(avatar_path, os.path.join(path, "uploads/"))
+        # Clone theme repo
+        logger.info("Clone theme repo.")
+        p = subprocess.Popen(["git", "clone", DEFAULT_THEME, os.path.join(path, "theme/simple")])
+        p.wait()
         logger.info("Done.")
 
     @staticmethod

@@ -71,3 +71,4 @@ class CatTestCase(unittest.TestCase):
             self.assertEqual(info.description, conf["description"])
             self.assertEqual(info.author_name, conf["author_name"])
             self.assertEqual(info.author_avatar, conf["author_avatar"])
+            self.assertEqual(info.theme, conf["theme"])
